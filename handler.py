@@ -1,5 +1,7 @@
 from utils import getRandomNumber, getScreenShots, isListofType
 from mouse import Mouse
+import numpy as np
+import time
 
 class Hanlder:
 
@@ -29,6 +31,8 @@ class Hanlder:
         box_info_list = self._std_model.detect(img_fp)
         for box_info in box_info_list:
             cropped_img = box_info['cropped_img']
+            if not isinstance(cropped_img, np.ndarray):
+                continue
             ocr_res = self._ocr_model.ocr_for_single_line(cropped_img)
             ocr_str = ''.join(ocr_res)
             if self._checkCharacter(ocr_str):
@@ -38,7 +42,8 @@ class Hanlder:
                 click_times = self._click_times[0]
                 if len(self._click_times) > 1:
                     click_times = getRandomNumber(self._click_times[0], self._click_times[1])
-                print("target_x: %d, target_y: %d, click_times: %d" % (target_x, target_y, click_times))
+                print("time: %s, target_x: %d, target_y: %d, click_times: %d" 
+                    % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), target_x, target_y, click_times))
                 self._mouse.move(target_x, target_y)
                 self._mouse.click(target_x, target_y, n=click_times)
                 return True
