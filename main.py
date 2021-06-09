@@ -16,7 +16,7 @@ def main():
     
     std_model = buildStdModel(config.get('std', 'model_name'))
     ocr_model = buildOcrModel(config.get('ocr', 'model_name'))
-    mouse = Mouse(config.getTuple('mouse', 'click_interval'), config.getTuple('mouse', 'move_time'))
+    mouse = Mouse(config.getTuple('mouse', 'click_interval'), config.getTuple('mouse', 'move_time', value=float))
 
     handlers = []
     active = config.get('active', 'name')
