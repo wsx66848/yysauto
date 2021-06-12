@@ -23,8 +23,8 @@ def main():
         config_encoding = sys.argv[2]
     config.read(config_file, encoding=config_encoding)
     
-    std_model = buildStdModel(config.get('std', 'model_name'))
-    ocr_model = buildOcrModel(config.get('ocr', 'model_name'))
+    std_model = buildStdModel(**dict(config.items('std')))
+    ocr_model = buildOcrModel(**dict(config.items('ocr')))
     mouse = Mouse(config.getTuple('mouse', 'click_interval'), config.getTuple('mouse', 'move_time', value=float))
 
     handlers = []
