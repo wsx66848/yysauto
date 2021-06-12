@@ -6,13 +6,22 @@ from handler import Hanlder
 from mouse import Mouse
 from config import Config
 import time
+import sys
 
 CONSTANT_MODE = 0
 THROTTLE_MODE = 1
+config_file = 'config.ini'
+config_encoding = 'utf-8'
 
 def main():
     config = Config()
-    config.read('config.ini', encoding='utf-8')
+    global config_file
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
+    global config_encoding
+    if len(sys.argv) > 2:
+        config_encoding = sys.argv[2]
+    config.read(config_file, encoding=config_encoding)
     
     std_model = buildStdModel(config.get('std', 'model_name'))
     ocr_model = buildOcrModel(config.get('ocr', 'model_name'))
