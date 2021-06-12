@@ -1,6 +1,7 @@
 import os
 os.environ['CNOCR_HOME'] = './cnocr'
 os.environ['CNSTD_HOME'] = './cnstd'
+os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 from utils import buildOcrModel, buildStdModel
 from handler import Hanlder
 from mouse import Mouse
