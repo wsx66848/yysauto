@@ -1,2 +1,3 @@
 1. 问题：pip中找不到cl的原因。这是因为setuptools中在设置msvc complier时，调用set命令读取到的环境变量是乱码，无法从PATH变量中读取到
 cl.exe的位置。解决方法：在HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor中将autorun的值从chcp 65001 改成chcp 65001>nul
+2. pyinstaller -F -n yys_autorun.exe --add-data="D:\Anaconda3\envs\ocr\Lib\site-packages\mxnet\*;./mxnet" main.py
