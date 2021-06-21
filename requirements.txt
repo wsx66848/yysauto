@@ -1,0 +1,6 @@
+PyUserInput==0.1.10
+keyboard==0.13.5
+opencv_python==4.5.2.52
+numpy==1.16.6
+Pillow==8.2.0
+pymouse==1.0
