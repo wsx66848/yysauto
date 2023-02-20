@@ -39,9 +39,9 @@ class Mouse(PyMouse):
         assert task_times > 0
         task_per_time = math.ceil(step / task_times)
         counter = 0
-        for i in range(task_times):
+        for _ in range(task_times):
             flag = False
-            for j in range(task_per_time):
+            for _ in range(task_per_time):
                 if counter >= step:
                     flag = True
                     break
@@ -52,7 +52,7 @@ class Mouse(PyMouse):
                 break
 
     def click(self, x, y, button=1, n=1):
-        for i in range(n):
+        for _ in range(n):
             super().click(x, y, button, 1)
             interval = self.interval[0]
             if len(self.interval) > 1:

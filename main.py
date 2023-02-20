@@ -1,78 +1,58 @@
+# -*- coding:UTF-8 -*-
 import os
 os.environ['CNOCR_HOME'] = './cnocr'
 os.environ['CNSTD_HOME'] = './cnstd'
-os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
-from utils import buildOcrModel, buildStdModel
-from handler import Hanlder
-from mouse import Mouse
 from config import Config
-import time
 import sys
+import win32api, win32gui, win32print, win32con
+from flow import ocrflow, timeflow, Step
 
-CONSTANT_MODE = 0
-THROTTLE_MODE = 1
+OCR_MODE = 0
+TIME_MODE = 1
 config_file = 'config.ini'
 config_encoding = 'utf-8'
 
-def main():
+if __name__ == "__main__":
+    #加载配置
     config = Config()
-    global config_file
     if len(sys.argv) > 1:
         config_file = sys.argv[1]
-    global config_encoding
     if len(sys.argv) > 2:
         config_encoding = sys.argv[2]
     config.read(config_file, encoding=config_encoding)
-    
-    std_model = buildStdModel(**dict(config.items('std')))
-    ocr_model = buildOcrModel(**dict(config.items('ocr')))
-    mouse = Mouse(config.getTuple('mouse', 'click_interval'), config.getTuple('mouse', 'move_time', value=float))
-
-    handlers = []
+    # mouse的位置和win32gui的一致，与ImageGrab不同，因此先计算转换因子
+    hDC = win32gui.GetDC(0)
+    screen_x = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES)
+    screen_y = win32print.GetDeviceCaps(hDC, win32con.DESKTOPVERTRES)
+    print("screen size: (%d, %d)" % (screen_x, screen_y))
+    mouse_x = win32api.GetSystemMetrics(0)
+    mouse_y = win32api.GetSystemMetrics(1)
+    print("mouse size: (%d, %d)" % (mouse_x, mouse_y))
+    factor_x = screen_x / mouse_x
+    factor_y = screen_y / mouse_y
+    print("factor_x: %.2f, factor_y: %.2f" % (factor_x, factor_y))
+    # 初始化steps
+    # 根据窗体位置计算真正的step
+    window_rect = win32gui.GetWindowRect(win32gui.WindowFromPoint(win32gui.GetCursorPos()))
+    window_x = window_rect[0] + window_rect[2]
+    window_y = window_rect[1] + window_rect[3]
+    activeSteps = []
     active = config.get('active', 'name')
-    steps = config.getTuple('active', active, value=str)
+    steps = config.getTuple(active, 'steps', value=str)
     for step in steps:
-        handler = Hanlder(std_model, ocr_model, mouse, bbox=config.getTuple(active, step + '_bbox'),
-            click_bbox=config.getTuple(active, step + '_click_bbox'), click_times=config.getTuple(active, step + '_click_times'))
-        handler.setCharacter(config.getTuple(active, step + '_char', value=str))
-        handlers.append(handler)
+        activeStep = Step()
+        bbox_factor = config.getTuple(active, step + '_bbox', value=float)
+        activeStep.bbox = (int(window_x * bbox_factor[0] * factor_x), int(window_y * bbox_factor[1] * factor_y), int(window_x * bbox_factor[2] * factor_x), int(window_y * bbox_factor[3] * factor_y))
+        click_bbox_factor = config.getTuple(active, step + '_click_bbox', value=float)
+        activeStep.click_bbox = (int(window_x * click_bbox_factor[0]), int(window_y * click_bbox_factor[1]), int(window_x * click_bbox_factor[2]), int(window_y * click_bbox_factor[3]))
+        activeStep.click_times = config.getTuple(active, step + '_click_times')
+        activeStep.chars = config.getTuple(active, step + '_char', value=str)
+        print("name: %s, step: %s" % (step, activeStep))
+        activeSteps.append(activeStep)
 
-    stop_interval = config.getint('exec', 'stop_interval')
-    rest_time = config.getint('exec', 'rest_time')
-    def constantExec():
-        while True:
-            time.sleep(stop_interval)
-            handler_len = len(handlers)
-            for i in range(handler_len):
-                if handlers[i].handle() is True:
-                    break
-
-    def throttleExec():
-        n = 0
-        while True:
-            time.sleep(stop_interval)
-            handler_len = len(handlers)
-            flag = True
-            for i in range(handler_len):
-                if handlers[i].handle() is True:
-                    break
-                if i == handler_len - 1:
-                    n += 1
-                    flag = False
-                    if n == 10:
-                        print("连续超过10次未检测到有效信息，休息%d秒" % rest_time)
-                        time.sleep(rest_time)
-                        n = 0
-            if flag is True:
-                n = 0
-
-    exec_mode = config.getint('exec', 'mode')
-    if exec_mode == CONSTANT_MODE:
-        constantExec()
-    elif exec_mode == THROTTLE_MODE:
-        throttleExec()
-    else:
-        raise TypeError
-
-if __name__ == "__main__":
-    main()
+    mode = config.getint("exec", "mode")
+    print(("mode: %d, start running..." % mode))
+    if mode == OCR_MODE:
+        ocrflow(config, activeSteps)
+    if mode == TIME_MODE:
+        timeflow(config)

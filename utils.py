@@ -2,7 +2,6 @@ import time
 import random
 import numpy as np
 import PIL.ImageGrab as screenGrab
-from cnstd import CnStd
 from cnocr import CnOcr
 
 
@@ -16,13 +15,10 @@ def getRandomNumber(min, max, float=False):
 
 def getScreenShots(x1, y1, x2, y2):
     img  = screenGrab.grab(bbox=(x1, y1, x2, y2))
-    return np.array(img.getdata(), np.uint8).reshape(img.size[1], img.size[0], 3)
+    return np.asarray(img.convert("RGB"))
 
-def buildStdModel(model_name, **kwargs):
-    return CnStd(model_name=model_name, **kwargs)
-
-def buildOcrModel(model_name, **kwargs):
-    return CnOcr(model_name=model_name, **kwargs)
+def buildOcrModel(**kwargs):
+    return CnOcr(**kwargs)
 
 def isListofType(container, unitype=str):
     if type(container) not in (list, tuple):
