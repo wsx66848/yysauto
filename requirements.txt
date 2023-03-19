@@ -1,4 +1,7 @@
-pywin32==304
-PyUserInput==0.1.10
 keyboard==0.13.5
 numpy==1.24.2
+Pillow==9.4.0
+pymouse==1.0
+PyUserInput==0.1.10
+pywin32==305
+win32gui==221.6

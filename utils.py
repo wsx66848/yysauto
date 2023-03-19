@@ -2,7 +2,9 @@ import time
 import random
 import numpy as np
 import PIL.ImageGrab as screenGrab
+print("start loading cnocr...")
 from cnocr import CnOcr
+print("end loading cnocr...")
 
 
 def getRandomNumber(min, max, float=False):
